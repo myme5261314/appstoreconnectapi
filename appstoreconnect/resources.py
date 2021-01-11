@@ -1,6 +1,7 @@
 import inspect
-from abc import ABC, abstractmethod
 import sys
+from abc import ABC, abstractmethod
+
 
 class Resource(ABC):
 
@@ -22,6 +23,7 @@ class Resource(ABC):
                     return self._api.get_related_resources(full_url=url)
                 else:
                     return self._api.get_related_resource(full_url=url)
+
             return getter
 
         raise AttributeError('%s have no attributes %s' % (self.type_name, item))
@@ -31,6 +33,9 @@ class Resource(ABC):
 
     def __dir__(self):
         return ['id'] + list(self._data.get('attributes', {}).keys()) + list(self._data.get('relationships', {}).keys())
+
+    def to_dict(self):
+        return dict(zip(["id"] + self.attributes, [self.__getattr__(x) for x in ["id"] + self.attributes]))
 
     @property
     def type_name(self):
@@ -59,7 +64,8 @@ class BetaTester(Resource):
 class BetaGroup(Resource):
     endpoint = '/v1/betaGroups'
     type = 'betaGroups'
-    attributes = ['isInternalGroup', 'name', 'publicLink', 'publicLinkEnabled', 'publicLinkId', 'publicLinkLimit', 'publicLinkLimitEnabled', 'createdDate']
+    attributes = ['isInternalGroup', 'name', 'publicLink', 'publicLinkEnabled', 'publicLinkId', 'publicLinkLimit',
+                  'publicLinkLimitEnabled', 'createdDate']
     relationships = {
         'app': {'multiple': False},
         'betaTesters': {'multiple': True},
